@@ -1,225 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Volleyball Clinics Calendar</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    margin: 0;
-    padding: 0;
-  }
-  header {
-    background-color: #d71920; /* Volleyball Canada red */
-    color: white;
-    padding: 20px;
-    text-align: center;
-  }
-  h1 {
-    margin: 0;
-  }
-  #calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background-color: #ccc;
-  }
-  .day {
-    background-color: white;
-    min-height: 120px;
-    padding: 10px;
-    position: relative;
-  }
-  .event {
-    margin: 5px 0;
-    padding: 5px;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em;
-  }
-  .setter { background-color: #1e90ff; }
-  .hitter { background-color: #28a745; }
-  .libero { background-color: #ffc107; color: black; }
-  .middle { background-color: #6f42c1; }
-  
-  /* Popup form */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 100;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
-  }
-  .modal-content {
-    background: white;
-    padding: 20px;
-    width: 300px;
-    border-radius: 8px;
-    text-align: center;
-  }
-  input, select, button {
-    width: 100%;
-    margin: 8px 0;
-    padding: 8px;
-  }
-  .success-box {
-    display: none;
-    background: #28a745;
-    color: white;
-    padding: 15px;
-    margin: 10px;
-    border-radius: 5px;
-    text-align: center;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volleyball Clinics Calendar</title>
+
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+    }
+
+    header {
+      background: #d71920;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    #calendar {
+      max-width: 900px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      min-height: 600px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+      position: relative;
+    }
+
+    .close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+    }
+
+    button {
+      background: #d71920;
+      color: #fff;
+      border: none;
+    }
+
+    .success-box {
+      display: none;
+      background: #28a745;
+      color: #fff;
+      padding: 10px;
+      margin: 10px auto;
+      border-radius: 5px;
+      text-align: center;
+      max-width: 400px;
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-  <h1>🏐 Volleyball Clinics Calendar</h1>
-  <p>Filter & register for your preferred sessions!</p>
-</header>
+  <header>🏐 Volleyball Clinics Calendar</header>
+  <div id="calendar"></div>
+  <div id="successBox" class="success-box">✅ You are registered!</div>
 
-<div id="calendar"></div>
-
-<div id="successBox" class="success-box">
-  ✅ You are registered!  
-  <br><button id="downloadIcsBtn">📅 Add to Calendar</button>
-</div>
-
-<!-- Registration Modal -->
-<div id="registerModal" class="modal">
-  <div class="modal-content">
-    <h3 id="modalSessionTitle"></h3>
-    <form id="registerForm">
-      <input type="text" id="name" placeholder="Your Name" required>
-      <input type="email" id="email" placeholder="Your Email" required>
-      <select id="position" required>
-        <option value="">Select Position</option>
-        <option value="Setter">Setter</option>
-        <option value="Hitter">Hitter</option>
-        <option value="Middle">Middle</option>
-        <option value="Libero">Libero</option>
-      </select>
-      <input type="hidden" id="session">
-      <input type="hidden" id="startTime">
-      <input type="hidden" id="endTime">
-      <button type="submit">Register</button>
-      <button type="button" onclick="closeModal()">Cancel</button>
-    </form>
+  <!-- Registration Modal -->
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <h2 id="modalSessionTitle"></h2>
+      <form id="registerForm">
+        <input type="text" id="name" placeholder="Your Name" required />
+        <input type="email" id="email" placeholder="Your Email" required />
+        <select id="position" required>
+          <option value="">Select Position</option>
+          <option value="Setter">Setter</option>
+          <option value="Hitter">Hitter</option>
+          <option value="Middle">Middle</option>
+          <option value="Libero">Libero</option>
+        </select>
+        <input type="hidden" id="session" />
+        <input type="hidden" id="startTime" />
+        <input type="hidden" id="endTime" />
+        <button type="submit">Register</button>
+      </form>
+    </div>
   </div>
-</div>
 
-<script>
-const events = [
-  { title: "Setter Skills", day: 1, start: "10:00", end: "11:30", type: "setter" },
-  { title: "Hitter Power", day: 1, start: "13:00", end: "14:30", type: "hitter" },
-  { title: "Middle Blocking", day: 2, start: "09:00", end: "10:30", type: "middle" },
-  { title: "Libero Defense", day: 2, start: "15:00", end: "16:30", type: "libero" },
-  { title: "Setter Advanced", day: 3, start: "11:00", end: "12:30", type: "setter" },
-  { title: "Hitter Drills", day: 3, start: "14:00", end: "15:30", type: "hitter" },
-  { title: "Middle Quick Sets", day: 4, start: "10:00", end: "11:30", type: "middle" },
-  { title: "Libero Passing", day: 4, start: "13:00", end: "14:30", type: "libero" },
-  { title: "Setter Basics", day: 5, start: "09:00", end: "10:30", type: "setter" },
-  { title: "Hitter Jump Training", day: 5, start: "15:00", end: "16:30", type: "hitter" }
-];
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
-const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-
-function renderCalendar() {
-  const cal = document.getElementById("calendar");
-  cal.innerHTML = "";
-  days.forEach((day, i) => {
-    const dayDiv = document.createElement("div");
-    dayDiv.className = "day";
-    dayDiv.innerHTML = `<strong>${day}</strong>`;
-    events.filter(ev => ev.day === i).forEach(ev => {
-      const evDiv = document.createElement("div");
-      evDiv.className = `event ${ev.type}`;
-      evDiv.textContent = `${ev.title} (${ev.start} - ${ev.end})`;
-      evDiv.onclick = () => openModal(ev);
-      dayDiv.appendChild(evDiv);
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const calendarEl = document.getElementById('calendar');
+      const modal = document.getElementById('registerModal');
+      const closeModalBtn = document.getElementById('closeModal');
+      const successBox = document.getElementById('successBox');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: async (fetchInfo, successCb, failureCb) => {
+          try {
+            const res = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLh_R9f1_2kZO1g5lnaxwwh98INL9XUt9tSIPePRD8K4QwvD6ZabY4sUQqvMe4ivxj-3y4RZFm-Zt5_lm6HkvzcgpbXy5Nco_RFUrh1XDgCH9e52C9LrJT3hGkxBH9787sDhp9xBOEbPdNV_kDohbl6WKaYWBOgRgIOzIgZEvVGr-gXtH5A_yWq8ebMpitgoqlJvWDsryp_iRwU3RJBVHqAyuC1xTPEHVKI3fscF8O1727fOUL5PTS_AtepAYg&lib=Mmw4LgxkgWkxNYCGVIBwSg35Zgl4cSBjj");
+            const data = await res.json();
+            console.log("Loaded events:", data);
+            successCb(data);
+          } catch (err) {
+            console.error("Failed loading events:", err);
+            failureCb(err);
+          }
+        },
+        eventClick: info => {
+          info.jsEvent.preventDefault();
+          const ev = info.event;
+          document.getElementById("modalSessionTitle").innerText = "Register: " + ev.title;
+          document.getElementById("session").value = ev.title;
+          document.getElementById("startTime").value = ev.start.toISOString();
+          document.getElementById("endTime").value = ev.end ? ev.end.toISOString() : '';
+          modal.style.display = "flex";
+        }
+      });
+      calendar.render();
+      // Auto-refresh every 1 minute
+      setInterval(() => calendar.refetchEvents(), 60000);
+      closeModalBtn.onclick = () => modal.style.display = "none";
+      window.onclick = e => {
+        if (e.target === modal) modal.style.display = "none";
+      };
+      document.getElementById("registerForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const data = {
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value,
+          position: document.getElementById("position").value,
+          session: document.getElementById("session").value,
+          startTime: document.getElementById("startTime").value,
+          endTime: document.getElementById("endTime").value
+        };
+        const proxy = "https://corsproxy.io/?";
+        const zapier = "https://hooks.zapier.com/hooks/catch/16657697/u6w6amq/";
+        try {
+          await fetch(proxy + encodeURIComponent(zapier), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+          });
+          successBox.style.display = "block";
+          document.getElementById("registerForm").reset();
+          modal.style.display = "none";
+        } catch (err) {
+          alert("Error registering: " + err);
+        }
+      });
     });
-    cal.appendChild(dayDiv);
-  });
-}
-
-function openModal(ev) {
-  document.getElementById("modalSessionTitle").textContent = ev.title;
-  document.getElementById("session").value = ev.title;
-  document.getElementById("startTime").value = ev.start;
-  document.getElementById("endTime").value = ev.end;
-  document.getElementById("registerModal").style.display = "flex";
-}
-
-function closeModal() {
-  document.getElementById("registerModal").style.display = "none";
-}
-
-document.getElementById("registerForm").addEventListener("submit", async function(e) {
-  e.preventDefault();
-  
-  const data = {
-    name: document.getElementById("name").value,
-    email: document.getElementById("email").value,
-    position: document.getElementById("position").value,
-    session: document.getElementById("session").value,
-    startTime: document.getElementById("startTime").value,
-    endTime: document.getElementById("endTime").value
-  };
-
-  try {
-    let res = await fetch("https://script.google.com/macros/s/AKfycbzQGjr1Gu4GUBQ8MV_Vqpker2CpYkJnDjSU-mQUcVjjiFarQwoWkgmoWzxNjWOMe09E/exec", {
-      method: "POST",
-      mode: "no-cors",
-      body: JSON.stringify(data)
-    });
-
-    closeModal();
-    document.getElementById("successBox").style.display = "block";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    document.getElementById("downloadIcsBtn").onclick = function() {
-      const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-SUMMARY:${data.session}
-DTSTART:${formatIcsDate(data.startTime)}
-DTEND:${formatIcsDate(data.endTime)}
-DESCRIPTION:Volleyball Clinic - ${data.position}
-END:VEVENT
-END:VCALENDAR`;
-
-      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${data.session}.ics`;
-      a.click();
-      URL.revokeObjectURL(url);
-    };
-
-  } catch (err) {
-    alert("Error registering: " + err);
-  }
-});
-
-function formatIcsDate(time) {
-  const now = new Date();
-  const [hour, minute] = time.split(":");
-  now.setHours(hour);
-  now.setMinutes(minute);
-  return now.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-}
-
-renderCalendar();
-</script>
-
+  </script>
 </body>
+
 </html>
