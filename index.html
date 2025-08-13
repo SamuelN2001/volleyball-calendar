@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volleyball Clinics Calendar</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+    header {
+      background-color: #d71920;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    #calendar {
+      max-width: 1100px;
+      margin: 20px auto;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      padding-top: 50px;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: auto;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 400px;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      cursor: pointer;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #d71920;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #b3151a;
+    }
+    .success-box {
+      background: #e6ffed;
+      color: #1b5e20;
+      border: 1px solid #1b5e20;
+      padding: 10px;
+      margin-top: 15px;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .add-calendar-btn {
+      background-color: #000;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>Volleyball Clinics Calendar</header>
+<div id="calendar"></div>
+
+<!-- Modal -->
+<div id="eventModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3 id="modalTitle"></h3>
+    <p id="modalTime"></p>
+    <form id="registrationForm">
+      <label>Name:</label>
+      <input type="text" id="name" required />
+      <label>Email:</label>
+      <input type="email" id="email" required />
+      <label>Position:</label>
+      <select id="position" required>
+        <option value="">Select position</option>
+        <option>Setter</option>
+        <option>Outside Hitter</option>
+        <option>Middle Blocker</option>
+        <option>Libero</option>
+      </select>
+      <input type="hidden" id="session" />
+      <input type="hidden" id="startTime" />
+      <input type="hidden" id="endTime" />
+      <button type="submit">Register</button>
+    </form>
+    <div id="successBox" class="success-box" style="display:none;">
+      ✅ You are registered!  
+      <button class="add-calendar-btn" id="addCalendarBtn">Add to Calendar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('eventModal');
+  const closeBtn = document.querySelector('.close');
+  const form = document.getElementById('registrationForm');
+  const successBox = document.getElementById('successBox');
+  const addCalendarBtn = document.getElementById('addCalendarBtn');
+
+  const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+    initialView: 'timeGridWeek',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    events: generateFakeEvents(),
+    eventClick: function(info) {
+      document.getElementById('modalTitle').innerText = info.event.title;
+      document.getElementById('modalTime').innerText =
+        info.event.start.toLocaleString() + " - " + info.event.end.toLocaleString();
+      document.getElementById('session').value = info.event.title;
+      document.getElementById('s
