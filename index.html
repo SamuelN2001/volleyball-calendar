@@ -1,242 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Volleyball Clinics Calendar</title>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #f9f9f9;
-    }
-    header {
-      background-color: #d71920;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-    #calendar {
-      max-width: 1100px;
-      margin: 20px auto;
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      padding-top: 50px;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.5);
-    }
-    .modal-content {
-      background-color: #fff;
-      margin: auto;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 400px;
-    }
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      cursor: pointer;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      background-color: #d71920;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #b3151a;
-    }
-    .success-box {
-      background: #e6ffed;
-      color: #1b5e20;
-      border: 1px solid #1b5e20;
-      padding: 10px;
-      margin-top: 15px;
-      border-radius: 5px;
-      text-align: center;
-    }
-    .add-calendar-btn {
-      background-color: #000;
-      margin-top: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volleyball Clinics Calendar</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background-color: #d71920; /* Volleyball Canada red */
+    color: white;
+    padding: 20px;
+    text-align: center;
+  }
+  h1 {
+    margin: 0;
+  }
+  #calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background-color: #ccc;
+  }
+  .day {
+    background-color: white;
+    min-height: 120px;
+    padding: 10px;
+    position: relative;
+  }
+  .event {
+    margin: 5px 0;
+    padding: 5px;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+  }
+  .setter { background-color: #1e90ff; }
+  .hitter { background-color: #28a745; }
+  .libero { background-color: #ffc107; color: black; }
+  .middle { background-color: #6f42c1; }
+  
+  /* Popup form */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-content {
+    background: white;
+    padding: 20px;
+    width: 300px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  input, select, button {
+    width: 100%;
+    margin: 8px 0;
+    padding: 8px;
+  }
+  .success-box {
+    display: none;
+    background: #28a745;
+    color: white;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 5px;
+    text-align: center;
+  }
+</style>
 </head>
 <body>
 
-<header>Volleyball Clinics Calendar</header>
+<header>
+  <h1>🏐 Volleyball Clinics Calendar</h1>
+  <p>Filter & register for your preferred sessions!</p>
+</header>
+
 <div id="calendar"></div>
 
-<!-- Modal -->
-<div id="eventModal" class="modal">
+<div id="successBox" class="success-box">
+  ✅ You are registered!  
+  <br><button id="downloadIcsBtn">📅 Add to Calendar</button>
+</div>
+
+<!-- Registration Modal -->
+<div id="registerModal" class="modal">
   <div class="modal-content">
-    <span class="close">&times;</span>
-    <h3 id="modalTitle"></h3>
-    <p id="modalTime"></p>
-    <form id="registrationForm">
-      <label>Name:</label>
-      <input type="text" id="name" required />
-      <label>Email:</label>
-      <input type="email" id="email" required />
-      <label>Position:</label>
+    <h3 id="modalSessionTitle"></h3>
+    <form id="registerForm">
+      <input type="text" id="name" placeholder="Your Name" required>
+      <input type="email" id="email" placeholder="Your Email" required>
       <select id="position" required>
-        <option value="">Select position</option>
-        <option>Setter</option>
-        <option>Outside Hitter</option>
-        <option>Middle Blocker</option>
-        <option>Libero</option>
+        <option value="">Select Position</option>
+        <option value="Setter">Setter</option>
+        <option value="Hitter">Hitter</option>
+        <option value="Middle">Middle</option>
+        <option value="Libero">Libero</option>
       </select>
-      <input type="hidden" id="session" />
-      <input type="hidden" id="startTime" />
-      <input type="hidden" id="endTime" />
+      <input type="hidden" id="session">
+      <input type="hidden" id="startTime">
+      <input type="hidden" id="endTime">
       <button type="submit">Register</button>
+      <button type="button" onclick="closeModal()">Cancel</button>
     </form>
-    <div id="successBox" class="success-box" style="display:none;">
-      ✅ You are registered!  
-      <button class="add-calendar-btn" id="addCalendarBtn">Add to Calendar</button>
-    </div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const modal = document.getElementById('eventModal');
-  const closeBtn = document.querySelector('.close');
-  const form = document.getElementById('registrationForm');
-  const successBox = document.getElementById('successBox');
-  const addCalendarBtn = document.getElementById('addCalendarBtn');
+const events = [
+  { title: "Setter Skills", day: 1, start: "10:00", end: "11:30", type: "setter" },
+  { title: "Hitter Power", day: 1, start: "13:00", end: "14:30", type: "hitter" },
+  { title: "Middle Blocking", day: 2, start: "09:00", end: "10:30", type: "middle" },
+  { title: "Libero Defense", day: 2, start: "15:00", end: "16:30", type: "libero" },
+  { title: "Setter Advanced", day: 3, start: "11:00", end: "12:30", type: "setter" },
+  { title: "Hitter Drills", day: 3, start: "14:00", end: "15:30", type: "hitter" },
+  { title: "Middle Quick Sets", day: 4, start: "10:00", end: "11:30", type: "middle" },
+  { title: "Libero Passing", day: 4, start: "13:00", end: "14:30", type: "libero" },
+  { title: "Setter Basics", day: 5, start: "09:00", end: "10:30", type: "setter" },
+  { title: "Hitter Jump Training", day: 5, start: "15:00", end: "16:30", type: "hitter" }
+];
 
-  const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-    initialView: 'timeGridWeek',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay'
-    },
-    events: generateFakeEvents(),
-    eventClick: function(info) {
-      document.getElementById('modalTitle').innerText = info.event.title;
-      document.getElementById('modalTime').innerText =
-        info.event.start.toLocaleString() + " - " + info.event.end.toLocaleString();
-      document.getElementById('session').value = info.event.title;
-      document.getElementById('startTime').value = info.event.start.toISOString();
-      document.getElementById('endTime').value = info.event.end.toISOString();
-      form.style.display = 'block';
-      successBox.style.display = 'none';
-      modal.style.display = 'block';
-    }
+const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+function renderCalendar() {
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+  days.forEach((day, i) => {
+    const dayDiv = document.createElement("div");
+    dayDiv.className = "day";
+    dayDiv.innerHTML = `<strong>${day}</strong>`;
+    events.filter(ev => ev.day === i).forEach(ev => {
+      const evDiv = document.createElement("div");
+      evDiv.className = `event ${ev.type}`;
+      evDiv.textContent = `${ev.title} (${ev.start} - ${ev.end})`;
+      evDiv.onclick = () => openModal(ev);
+      dayDiv.appendChild(evDiv);
+    });
+    cal.appendChild(dayDiv);
   });
+}
 
-  calendar.render();
+function openModal(ev) {
+  document.getElementById("modalSessionTitle").textContent = ev.title;
+  document.getElementById("session").value = ev.title;
+  document.getElementById("startTime").value = ev.start;
+  document.getElementById("endTime").value = ev.end;
+  document.getElementById("registerModal").style.display = "flex";
+}
 
-  closeBtn.onclick = function() {
-    modal.style.display = 'none';
+function closeModal() {
+  document.getElementById("registerModal").style.display = "none";
+}
+
+document.getElementById("registerForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  
+  const data = {
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    position: document.getElementById("position").value,
+    session: document.getElementById("session").value,
+    startTime: document.getElementById("startTime").value,
+    endTime: document.getElementById("endTime").value
   };
-  window.onclick = function(e) {
-    if (e.target == modal) modal.style.display = 'none';
-  };
 
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const data = {
-      name: document.getElementById('name').value,
-      email: document.getElementById('email').value,
-      position: document.getElementById('position').value,
-      session: document.getElementById('session').value,
-      startTime: document.getElementById('startTime').value,
-      endTime: document.getElementById('endTime').value
-    };
-    fetch("https://script.google.com/macros/s/AKfycbzz8t2urxwX3z45UWDlMaHVUHfT5dOfdhzjox1dpc8WQkJC0n_qcIZ69GqDinwbvIuS/exec", {
+  try {
+    let res = await fetch("https://script.google.com/macros/s/AKfycbzQGjr1Gu4GUBQ8MV_Vqpker2CpYkJnDjSU-mQUcVjjiFarQwoWkgmoWzxNjWOMe09E/exec", {
       method: "POST",
       mode: "no-cors",
       body: JSON.stringify(data)
-    }).then(() => {
-      form.style.display = 'none';
-      successBox.style.display = 'block';
-    }).catch(err => alert("Error: " + err));
-  });
+    });
 
-  addCalendarBtn.addEventListener('click', function() {
-    const title = document.getElementById('session').value;
-    const start = document.getElementById('startTime').value;
-    const end = document.getElementById('endTime').value;
-    const icsContent = `BEGIN:VCALENDAR
+    closeModal();
+    document.getElementById("successBox").style.display = "block";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    document.getElementById("downloadIcsBtn").onclick = function() {
+      const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
-SUMMARY:${title}
-DTSTART:${formatICSDate(start)}
-DTEND:${formatICSDate(end)}
+SUMMARY:${data.session}
+DTSTART:${formatIcsDate(data.startTime)}
+DTEND:${formatIcsDate(data.endTime)}
+DESCRIPTION:Volleyball Clinic - ${data.position}
 END:VEVENT
 END:VCALENDAR`;
-    const blob = new Blob([icsContent], { type: 'text/calendar' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${title}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
 
-  function formatICSDate(dateString) {
-    const d = new Date(dateString);
-    return d.toISOString().replace(/[-:]/g, "").split('.')[0] + "Z";
-  }
-
-  function generateFakeEvents() {
-    const colors = {
-      "Setter": "#d71920",
-      "Outside Hitter": "#1a73e8",
-      "Middle Blocker": "#34a853",
-      "Libero": "#fbbc05"
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${data.session}.ics`;
+      a.click();
+      URL.revokeObjectURL(url);
     };
-    const positions = Object.keys(colors);
-    const events = [];
-    const today = new Date();
-    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 1));
-    for (let i = 0; i < 25; i++) {
-      const pos = positions[i % positions.length];
-      const start = new Date(startOfWeek);
-      start.setDate(start.getDate() + (i % 7));
-      start.setHours(9 + (i % 5) * 2, 0);
-      const end = new Date(start);
-      end.setHours(start.getHours() + 1);
-      events.push({
-        title: `${pos} Clinic ${i+1}`,
-        start: start.toISOString(),
-        end: end.toISOString(),
-        backgroundColor: colors[pos],
-        borderColor: colors[pos]
-      });
-    }
-    return events;
+
+  } catch (err) {
+    alert("Error registering: " + err);
   }
 });
+
+function formatIcsDate(time) {
+  const now = new Date();
+  const [hour, minute] = time.split(":");
+  now.setHours(hour);
+  now.setMinutes(minute);
+  return now.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+}
+
+renderCalendar();
 </script>
 
 </body>
